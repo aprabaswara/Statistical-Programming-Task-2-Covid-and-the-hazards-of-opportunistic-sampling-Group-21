@@ -1,0 +1,1 @@
+# Statistical-Programming-Task-2-Covid-and-the-hazards-of-opportunistic-sampling-Group-21
