@@ -39,7 +39,7 @@ seir <- function(n=5500000,ne=10,nt=100,gamma=1/3,delta=1/5) {
 df <- data.frame(infections=seir()$I, days=1:100)
 par(mfcol=c(2,3),mar=c(4,4,1,1)) ## set plot window up for multiple plots
 #hist(epi$beta,xlab="beta",main="") ## beta distribution
-plot(seir()$I,ylim=c(0,max(seir()$I)),xlab="day",ylab="N",type='l',col='red') 
+plot(df$infections,ylim=c(0,max(df$infections)),xlab="day",ylab="N",type='l',col='red') 
 abline(v = df$days[df$infections==max(df$infections)], col = "black", lty = 2)
 
 #Red : Number of new infection each day
