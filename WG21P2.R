@@ -7,8 +7,8 @@
 ## https://github.com/aprabaswara/Statistical-Programming-Task-2-Covid-and-the-hazards-of-opportunistic-sampling-Group-21.git
 
 
-seir <- function(n=5500000,ne=10,nt=100,gamma=1/3,delta=1/5) {
-  ## SEIR stochastic simulation model.
+covid_simulation <- function(n=5500000,ne=10,nt=100,gamma=1/3,delta=1/5){
+  ## covid stochastic simulation model.
   ## n = population size; ne = initially exposed; nt = number of days
   ## gamma = daily prob E -> I; delta = daily prob I -> R;
   x <- rep(0,n) ## initialize to susceptible state
@@ -28,12 +28,12 @@ seir <- function(n=5500000,ne=10,nt=100,gamma=1/3,delta=1/5) {
     u <- runif(n) ## uniform random deviates
     x[x==2&u<delta] <- 3 ## I -> R with prob delta
     x[x==1&u<gamma] <- 2 ## E -> I with prob gamma
-    x[x==0&u<beta[i]*sum(beta)*lambda*I[i-1]] <- 1 ## S -> E with prob beta*I[i-1]
+    x[x==0&u[which(x==0)]<sum(beta[which(x==2)])*lamda*beta[which(x==0)]]<-1 ## S -> E with prob beta*I[i-1]
     S[i] <- sum(x==0); E[i] <- sum(x==1)
     I[i] <- sum(x==2); R[i] <- sum(x==3)
   }
   list(S=S,E=E,I=I,R=R,beta=beta)
-} ## seir
+} ## covid
 
 
 df <- data.frame(infections=seir()$I, days=1:100)
