@@ -28,7 +28,8 @@ covid_simulation <- function(n=5500000,ne=10,nt=100,gamma=1/3,delta=1/5){
     u <- runif(n) ## uniform random deviates
     x[x==2&u<delta] <- 3 ## I -> R with prob delta
     x[x==1&u<gamma] <- 2 ## E -> I with prob gamma
-    x[x==0&u[which(x==0)]<sum(beta[which(x==2)])*lamda*beta[which(x==0)]]<-1 ## S -> E with prob beta*I[i-1]
+    x[which(x==0)][u[which(x==0)]<sum(beta[which(x==2)])*lambda*beta[which(x==0)]]<-1
+    ## S -> E with prob beta*I[i-1]
     S[i] <- sum(x==0); E[i] <- sum(x==1)
     I[i] <- sum(x==2); R[i] <- sum(x==3)
   }
