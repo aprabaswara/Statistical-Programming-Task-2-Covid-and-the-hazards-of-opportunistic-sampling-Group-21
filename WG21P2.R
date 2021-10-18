@@ -7,6 +7,8 @@
 ## https://github.com/aprabaswara/Statistical-Programming-Task-2-Covid-and-the-hazards-of-opportunistic-sampling-Group-21.git
 
 
+
+##IDEA 1
 #for wholle number
 n=5500000
 
@@ -48,19 +50,22 @@ list (S=S,E=E,I=I,R=R,beta=beta)
 
 plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
 
+
+
+
 #for 10%
 
-n=550000
+n=5500000/10
 
 ne=10
 nt=150
 gamma=1/3
 delta=1/5
-lamda=0.4/n
-x<-rep(0,n)
-beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
+lamda=0.4/550000
+x<-rep(0,550000)
+beta<- rlnorm(5500000,0,0.5); beta <- beta/mean(beta)
 beta_sort <- sort(beta,decreasing=FALSE)
-threshold<-beta_sort[n]
+threshold<-beta_sort[550000]
 #length(beta[which(beta==threshold)])
 beta <- beta[which(beta<=threshold)]
 
@@ -74,7 +79,7 @@ S[1]<-n-ne;E[1]<-ne
 
 for (i in 2:nt){
   
-  u<-runif(n)
+  u<-runif(550000)
   
   t<-sum(beta[which(x==2)])
   x[x==2&u<delta]<-3## I -> R with prob delta
@@ -96,7 +101,7 @@ list (S=S,E=E,I=I,R=R,beta=beta)
 
 plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
 
-
+max(I)
 #for 0.1%
 
 
@@ -148,26 +153,27 @@ plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
 
 #write in one function
 covid_simulation <- function(n,nt){
-  ## covid stochastic simulation model.
-  ## n = population size; ne = initially exposed; nt = number of days
-  ## gamma = daily prob E -> I; delta = daily prob I -> R;
-  x <- rep(0,n) ## initialize to susceptible state
-  #beta <- rlnorm(n,0,0.5) ## individual infection rates
-  #beta <- beta/mean(beta)
-  #beta_sort <- sort(beta,decreasing=TRUE)
-  #beta_lower <- tail(beta_sort,n/10) ## find the lowest beta value
+
+  
   ne=10
-  lambda <- 0.4/n
-  x[1:ne] <- 1 ## create some exposed
-  S <- E <- I <- R <- rep(0,nt) ## set up storage for pop in each state
-  S[1] <- n-ne;E[1] <- ne ## initialize
+
   gamma=1/3
   delta=1/5
-  #`%ni%` = Negate(`%in%`)
+  lamda=0.4/n
   
-  ##State: S=0; E=1; I=2; R=3
+  x<-rep(0,n)
+
   
-  for (i in 2:nt){ ## loop over days
+  
+  
+  x[1:ne]<-1 #exposed
+  
+  S<-E<-I<-R<-rep(0,nt)
+  
+  S[1]<-n-ne;E[1]<-ne
+  
+  for (i in 2:nt){
+    
     u<-runif(n)
     
     t<-sum(beta[which(x==2)])
@@ -179,10 +185,18 @@ covid_simulation <- function(n,nt){
     
     
     
-    S[i] <- sum(x==0); E[i] <- sum(x==1)
-    I[i] <- sum(x==2); R[i] <- sum(x==3)
+    
+    S[i]<-sum(x==0);E[i]<-sum(x==1)
+    I[i]<-sum(x==2);R[i]<-sum(x==3)
+    
   }
-  list(S=S,E=E,I=I,R=R,beta=beta)
+  
+  
+  list (S=S,E=E,I=I,R=R,beta=beta)
+
+
+  
+  plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
 } ## covid
 
 n=5500000
@@ -197,12 +211,13 @@ beta<-beta[which(beta%in%beta_lower)]
 ep2<-covid_simulation (n=n*0.1,nt=150)
 
 
-# <- sort(beta,decreasing=FALSE)
-#threshold<-beta_sort[n/10]
-#length(beta[which(beta==threshold)])
-#beta <- beta[which(beta<=threshold)]
-#ep2<-covid_simulation (n=n*0.1,nt=150)
 
+beta_sort <- sort(beta,decreasing=FALSE)
+n<-n/10
+threshold<-beta_sort[n]
+#length(beta[which(beta==threshold)])
+beta <- beta[which(beta<=threshold)]
+ep2<-covid_simulation (550000,150)
 
 
 
@@ -228,3 +243,190 @@ abline(v = df$days[df$infections==max(df$infections)], col = "black", lty = 2)
 #Blue : Number of new infection among the 10% of the population with lowest beta value
 #Green : Number of new infection in a random sample of 0.1% of the population.
 #Black : The peak of each infection
+
+
+
+#IDEA 2
+
+
+#for wholle number
+n=5500000
+
+ne=10
+nt=150
+gamma=1/3
+delta=1/5
+lamda=0.4/5500000
+x<-rep(0,5500000)
+beta<- rlnorm(5500000,0,0.5); beta <- beta/mean(beta)
+
+
+
+x[1:ne]<-1 #exposed
+
+S<-E<-I<-R<-rep(0,nt)
+
+S[1]<-5500000-ne;E[1]<-ne
+
+
+#length(beta[which(beta==threshold)])
+#x <- x[which(beta<=threshold)]
+
+for (i in 2:nt){
+  
+  u<-runif(5500000)
+  
+  t<-sum(beta[which(x==2)])
+  x[x==2&u<delta]<-3## I -> R with prob delta
+  
+  x[x==1&u<gamma]<-2 ## E -> I with prob gamma
+  
+  x[which(x==0)][u[which(x==0)]<t*lamda*beta[which(x==0)]]<-1
+  
+  
+  
+  
+  
+  #x[which(x==0)][u[which(x==0)]<sum(beta[which(x==2)])*lamda*beta[which(x==0)]]<-1
+  
+  S[i]<-sum(x==0);E[i]<-sum(x==1)
+  I[i]<-sum(x==2);R[i]<-sum(x==3)
+  
+  #S[i]<-sum(x==0);E[i]<-sum(x==1);I[i]<-sum(x==2);R[i]<-sum(x==3)
+  
+  
+}
+
+
+list (S=S,E=E,I=I,R=R,beta=beta)
+
+plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#for 10%
+
+
+
+
+n=5500000
+
+ne=10
+nt=150
+gamma=1/3
+delta=1/5
+lamda=0.4/5500000
+x<-rep(0,5500000)
+beta<- rlnorm(5500000,0,0.5); beta <- beta/mean(beta)
+beta_sort <- sort(beta,decreasing=FALSE)
+
+threshold<-beta_sort[550000]
+
+
+x[1:ne]<-1 #exposed
+
+S<-E<-I<-R<-rep(0,nt)
+
+S[1]<-550000-ne;E[1]<-ne
+
+
+for (i in 2:nt){
+  
+  u<-runif(5500000)
+  
+  t<-sum(beta[which(x==2)])
+  x[x==2&u<delta]<-3## I -> R with prob delta
+  
+  x[x==1&u<gamma]<-2 ## E -> I with prob gamma
+  
+  x[which(x==0)][u[which(x==0)]<t*lamda*beta[which(x==0)]]<-1
+  
+  y <- x[which(beta<=threshold)]
+  
+  
+  
+  #x[which(x==0)][u[which(x==0)]<sum(beta[which(x==2)])*lamda*beta[which(x==0)]]<-1
+  
+  S[i]<-sum(y==0);E[i]<-sum(y==1)
+  I[i]<-sum(y==2);R[i]<-sum(y==3)
+  
+  #S[i]<-sum(x==0);E[i]<-sum(x==1);I[i]<-sum(x==2);R[i]<-sum(x==3)
+  
+  
+}
+
+
+list (S=S,E=E,I=I,R=R,beta=beta)
+
+plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
+
+
+
+
+#for 0.1%
+
+
+
+n=5500000
+
+n<-5500000*0.001
+beta<- rlnorm(5500000,0,0.5); beta <- beta/mean(beta)
+sample_beta<-sample(beta,n)
+
+
+m<-which(beta%in%sample_beta)
+ne=10
+nt=150
+gamma=1/3
+delta=1/5
+lamda=0.4/5500000
+x<-rep(0,5500000)
+
+x[1:ne]<-1 #exposed
+
+S<-E<-I<-R<-rep(0,nt)
+
+S[1]<-550000-ne;E[1]<-ne
+
+
+for (i in 2:nt){
+  
+  u<-runif(5500000)
+  
+  t<-sum(beta[which(x==2)])
+  x[x==2&u<delta]<-3## I -> R with prob delta
+  
+  x[x==1&u<gamma]<-2 ## E -> I with prob gamma
+  
+  x[which(x==0)][u[which(x==0)]<t*lamda*beta[which(x==0)]]<-1
+  
+  z <- x[m]
+  
+  
+  
+  
+  
+  S[i]<-sum(z==0);E[i]<-sum(z==1)
+  I[i]<-sum(z==2);R[i]<-sum(z==3)
+  
+ 
+  
+  
+}
+
+
+list (S=S,E=E,I=I,R=R,beta=beta)
+
+plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
