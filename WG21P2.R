@@ -590,17 +590,27 @@ n<-5500000
 nt<-150
 beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
 epi<-covid_simulation(n,nt,choice=beta)
-plot(epi$I,ylim=c(0,max(epi$I)),xlab="day",ylab="N",col='red',type='l')
+#plot(epi$I,ylim=c(0,max(epi$I)),xlab="day",ylab="N",col='red',type='l')
 
 
 beta_sort<-sort(beta,decreasing = TRUE)
 beta_lower<- tail(beta_sort,n*0.1)
 eplower<-covid_simulation(n,nt,choice=beta_lower)
-points(eplower$I,ylim=c(0,max(eplower$I)),xlab="day",ylab="N",col='green',type='l')
+#points(eplower$I,ylim=c(0,max(eplower$I)),xlab="day",ylab="N",col='green',type='l')
 
 sample_beta<-sample(beta,n*0.001)
 epsample<-covid_simulation(n,nt,choice=sample_beta)
-lines(epsample$I,ylim=c(0,max(epsample$I)),xlab="day",ylab="N",col='blue',type='l')
+#lines(epsample$I,ylim=c(0,max(epsample$I)),xlab="day",ylab="N",col='blue',type='l')
+
+#Standardisation
+plot(epi$I/n,ylim=c(0,max(epi$I)/n),xlab="day",ylab="N",col='red',type='l')
+points(eplower$I/(0.1*n),ylim=c(0,max(eplower$I)/(0.1*n)),xlab="day",ylab="N",col='green',type='l')
+lines(epsample$I/(0.001*n),ylim=c(0,max(epsample$I)/(0.001*n)),xlab="day",ylab="N",col='blue',type='l')
+
+
+#Adit, what's this mwans?:Finally write code to visualize the variability in the results from simulation to simulation, by running 10 replicate simulations, and suitably plotting these.
+
+
 
 df <- data.frame(infections=seir()$I, days=1:100)
 par(mfcol=c(2,3),mar=c(4,4,1,1)) ## set plot window up for multiple plots
@@ -608,4 +618,4 @@ par(mfcol=c(2,3),mar=c(4,4,1,1)) ## set plot window up for multiple plots
 plot(df$infections,ylim=c(0,max(df$infections)),xlab="day",ylab="N",type='l',col='red') 
 abline(v = df$days[df$infections==max(df$infections)], col = "black", lty = 2)
 
-##probability based on last day? 10% or general? naming
+##probability based on last day? 10% or general? naming?modeling days?
