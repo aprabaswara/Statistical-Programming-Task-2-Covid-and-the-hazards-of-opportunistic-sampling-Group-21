@@ -7,20 +7,20 @@
 ## https://github.com/aprabaswara/Statistical-Programming-Task-2-Covid-and-the-hazards-of-opportunistic-sampling-Group-21.git
 
 
-covid_simulation <- function(n=5500000,ne=10,nt=100,gamma=1/3,delta=1/5){
+covid_simulation <- function(n,ne=10,nt,gamma=1/3,delta=1/5){
   ## covid stochastic simulation model.
   ## n = population size; ne = initially exposed; nt = number of days
   ## gamma = daily prob E -> I; delta = daily prob I -> R;
   x <- rep(0,n) ## initialize to susceptible state
-  beta <- rlnorm(n,0,0.5) ## individual infection rates
-  beta <- beta/mean(beta)
-  beta_sort <- sort(beta,decreasing=TRUE)
-  beta_lower <- tail(beta_sort,n/10) ## find the lowest beta value
+  #beta <- rlnorm(n,0,0.5) ## individual infection rates
+  #beta <- beta/mean(beta)
+  #beta_sort <- sort(beta,decreasing=TRUE)
+  #beta_lower <- tail(beta_sort,n/10) ## find the lowest beta value
   lambda <- 0.4/n
   x[1:ne] <- 1 ## create some exposed
   S <- E <- I <- R <- rep(0,nt) ## set up storage for pop in each state
   S[1] <- n-ne;E[1] <- ne ## initialize
-  `%ni%` = Negate(`%in%`)
+  #`%ni%` = Negate(`%in%`)
   
   ##State: S=0; E=1; I=2; R=3
   
@@ -36,6 +36,18 @@ covid_simulation <- function(n=5500000,ne=10,nt=100,gamma=1/3,delta=1/5){
   list(S=S,E=E,I=I,R=R,beta=beta)
 } ## covid
 
+n=5500000
+beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
+ep1<-covid_simulation (n,nt=150)
+
+
+beta<-sort(beta,decreasing = FALSE)
+beta<-beta[1:(n*0.1)]
+ep2<-covid_simulation (n=n*0.1,nt=150)
+
+beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
+beta<-sample(beta,n*0.001)
+ep3<-covid_simulation (n=n*0.001,nt=150)
 
 df <- data.frame(infections=seir()$I, days=1:100)
 par(mfcol=c(2,3),mar=c(4,4,1,1)) ## set plot window up for multiple plots
