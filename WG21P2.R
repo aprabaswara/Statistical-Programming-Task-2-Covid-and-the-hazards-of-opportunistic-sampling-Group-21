@@ -159,7 +159,7 @@ covid_simulation <- function(n,nt){
 
   gamma=1/3
   delta=1/5
-  lamda=0.4/n
+  lambda=0.4/n
   
   x<-rep(0,n)
 
@@ -177,11 +177,12 @@ covid_simulation <- function(n,nt){
     u<-runif(n)
     
     t<-sum(beta[which(x==2)])
+    
     x[x==2&u<delta]<-3## I -> R with prob delta
     
     x[x==1&u<gamma]<-2 ## E -> I with prob gamma
     
-    x[which(x==0)][u[which(x==0)]<t*lamda*beta[which(x==0)]]<-1
+    x[which(x==0)][u[which(x==0)]<t*lambda*beta[which(x==0)]]<-1
     
     
     
@@ -196,34 +197,35 @@ covid_simulation <- function(n,nt){
 
 
   
-  plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
+  
 } ## covid
 
 n=5500000
 nt=150
 beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
-ep1<-covid_simulation (n,nt)
+ep1<-covid_simulation(n,nt)
 
 
 beta_sort<-sort(beta,decreasing = TRUE)
-beta_lower <- tail(beta_sort,n*0.1)
+beta_lower <- tail(beta_sort,n/10)
 beta<-beta[which(beta%in%beta_lower)]
-ep2<-covid_simulation (n=n*0.1,nt=150)
+ep2<-covid_simulation (n/10,nt)
 
 
 
-beta_sort <- sort(beta,decreasing=FALSE)
-n<-n/10
-threshold<-beta_sort[n]
-#length(beta[which(beta==threshold)])
-beta <- beta[which(beta<=threshold)]
-ep2<-covid_simulation (550000,150)
+#beta_sort <- sort(beta,decreasing=FALSE)
+#n<-n/10
+#threshold<-beta_sort[n]
+##length(beta[which(beta==threshold)])
+#beta <- beta[which(beta<=threshold)]
+#ep2<-covid_simulation (550000,150)
 
 
 
 beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
+
 beta<-sample(beta,n*0.001)
-ep3<-covid_simulation (n=n*0.001,nt=150)
+ep3<-covid_simulation (n=n*0.001,nt)
 
 
 
@@ -430,3 +432,89 @@ for (i in 2:nt){
 list (S=S,E=E,I=I,R=R,beta=beta)
 
 plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
+
+
+
+
+
+#write in one function
+
+covid_simulation <- function(n=5500000,nt=150){
+  
+  ne=10
+  gamma=1/3
+  delta=1/5
+  lamda=0.4/n
+  x<-rep(0,n)
+  beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
+  
+  
+  beta_sort<-sort(beta,decreasing = TRUE)
+  beta_lower <- tail(beta_sort,n*0.1)
+  beta_lower_index<-which(beta%in%beta_lower)
+
+  
+  sample_beta<-sample(beta,n*0.001)
+  sample_index<-which(beta%in%sample_beta)
+  
+  
+  x[1:ne]<-1 #exposed
+  
+  S<-E<-I<-R<-rep(0,nt)
+  S_lower<-E_lower<-I_lower<-R_lower<-rep(0,nt)
+  S_sample<-E_sample<-I_sample<-R_sample<-rep(0,nt)
+  
+  S[1]<-n-ne;E[1]<-ne
+  S_lower[1]<-n-ne;E_lower[1]<-ne
+  S_sample[1]<-n-ne;E_sample[1]<-ne
+  
+  
+  
+  for (i in 2:nt){
+    
+    u<-runif(n)
+    
+    sum_beta_I<-sum(beta[which(x==2)])
+    
+    x[x==2&u<delta]<-3## I -> R with prob delta
+    
+    x[x==1&u<gamma]<-2 ## E -> I with prob gamma
+    
+    x[which(x==0)][u[which(x==0)]<sum_beta_I*lamda*beta[which(x==0)]]<-1
+    
+    y <- x[beta_lower_index]
+    
+    z <- x[sample_index]
+    
+    
+    #x[which(x==0)][u[which(x==0)]<sum(beta[which(x==2)])*lamda*beta[which(x==0)]]<-1
+    
+    S[i]<-sum(x==0);E[i]<-sum(x==1);I[i]<-sum(x==2);R[i]<-sum(x==3)
+    
+    S_lower[i]<-sum(y==0);E_lower[i]<-sum(y==1);I_lower[i]<-sum(y==2);R_lower[i]<-sum(y==3)
+    
+    S_sample[i]<-sum(z==0);E_sample[i]<-sum(z==1);I_sample[i]<-sum(z==2);R_sample[i]<-sum(z==3)
+    
+    
+    
+    
+  }
+  
+  
+  list (S=S,E=E,I=I,R=R,beta=beta)
+  list (S_lower=S_lower,E_lower=E_lower,I_lower=I_lower,R_lower=R_lower,beta=beta)
+  list (S_sample=S_sample,E_sample=E_sample,I_sample=I_sample,R_sample=R_sample,beta=beta)
+  
+  
+}
+
+epi<-covid_simulation (n=5500000,nt=150)
+plot(epi$I,ylim=c(0,max(epi$I)),xlab="day",ylab="N",col='red',type='l')
+points(epi$I_lower,ylim=c(0,max(epi$I_lower)),xlab="day",ylab="N",col='green',type='l')
+lines(epi$I_sample,ylim=c(0,max(epi$I_sample)),xlab="day",ylab="N",col='blue',type='l')
+
+df <- data.frame(infections=seir()$I, days=1:100)
+par(mfcol=c(2,3),mar=c(4,4,1,1)) ## set plot window up for multiple plots
+#hist(epi$beta,xlab="beta",main="") ## beta distribution
+plot(df$infections,ylim=c(0,max(df$infections)),xlab="day",ylab="N",type='l',col='red') 
+abline(v = df$days[df$infections==max(df$infections)], col = "black", lty = 2)
