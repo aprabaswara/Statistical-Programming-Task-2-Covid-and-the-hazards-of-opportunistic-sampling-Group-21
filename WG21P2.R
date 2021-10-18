@@ -41,13 +41,18 @@ beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
 ep1<-covid_simulation (n,nt=150)
 
 
-beta<-sort(beta,decreasing = FALSE)
-beta<-beta[1:(n*0.1)]
+beta_sort<-sort(beta,decreasing = TRUE)
+beta_lower <- tail(beta_sort,n*0.1)
+beta<-beta[na.omit(match(beta,beta_lower))]
 ep2<-covid_simulation (n=n*0.1,nt=150)
 
 beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
 beta<-sample(beta,n*0.001)
 ep3<-covid_simulation (n=n*0.001,nt=150)
+
+plot(ep1$I,ylim=c(0,max(ep1$I)),xlab="day",ylab="N",col='red',type='l')
+points(ep2$I,ylim=c(0,max(ep2$I)),xlab="day",ylab="N",col='green',type='l')
+lines(ep3$I,ylim=c(0,max(ep3$I)),xlab="day",ylab="N",col='blue',type='l')
 
 df <- data.frame(infections=seir()$I, days=1:100)
 par(mfcol=c(2,3),mar=c(4,4,1,1)) ## set plot window up for multiple plots
