@@ -713,6 +713,17 @@ covid_simulation<- function(n,nt,beta){
   points(U/(0.1*n),ylim=c(0,max(U)/(0.1*n)),xlab="day",ylab="N",col='green',type='l')
   lines(G/(0.001*n),ylim=c(0,max(G)/(0.001*n)),xlab="day",ylab="N",col='blue',type='l')
   
+  ##Add legend and threshold line at the peak
+  df<-data.frame(I=I/n,I_lower=U/(0.1*n),I_sample=G/(0.001*n),days=1:nt)
+  abline(v = df$days[df$I==max(df$I)], col = "red", lty = 3)
+  abline(v = df$days[df$I_lower==max(df$I_lower)], col = "green", lty = 3)
+  abline(v = df$days[df$I_sample==max(df$I_sample)], col = "blue", lty = 3)
+  legend(1, 0.12, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
+  
+  ##Display horizontal line
+  ##abline(h = max(df$I), col = "red", lty = 3)
+  ##abline(h = max(df$I_lower), col = "green", lty = 3)
+  ##abline(h = max(df$I_sample), col = "blue", lty = 3)
 }
 n<-5500000
 nt<-150
