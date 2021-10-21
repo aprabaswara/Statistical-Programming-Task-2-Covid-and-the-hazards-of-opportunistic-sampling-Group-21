@@ -1171,6 +1171,7 @@ covid_simulation<- function(pop_size,sim_days,beta_value){
   #abline(h = max(G/(0.001*pop_size)), col = "blue", lty = 3)
 }
 
+
 ##initialize data
 n<-5500000 ##Scotland population
 nt<-150 ##number of observed days
@@ -1232,44 +1233,49 @@ max_sample <- aggregate(plot_data$I_sample, by = list(plot_data$simulation), max
 colnames(max_sample) <- c("Simulation", "Infected_Maximum")
 
 ##Find which day that have the highest new infection per simulation in each population
-day_whole <- aggregate(plot_data$I_whole, by = list(plot_data$simulation), max)
-colnames(day_whole) <- c("Simulation", "Day")
-
-max_lower <- aggregate(plot_data$I_lower, by = list(plot_data$simulation), max)
-colnames(max_lower) <- c("Simulation", "Infected_Maximum")
-
-max_sample <- aggregate(plot_data$I_sample, by = list(plot_data$simulation), max)
-colnames(max_sample) <- c("Simulation", "Infected_Maximum")
+record_data <- data.frame(day_whole=numeric(),day_lower=numeric(),day_sample=numeric(),simulation=character())
+for (i in 1:10){
+  whole_day <- plot_data$days[which(plot_data$I_whole==max(plot_data$I_whole[plot_data$simulation==as.character(i)]))]
+  lower_day <- plot_data$days[which(plot_data$I_lower==max(plot_data$I_lower[plot_data$simulation==as.character(i)]))]
+  sample_day <-plot_data$days[which(plot_data$I_sample==max(plot_data$I_sample[plot_data$simulation==as.character(i)]))]
+  input_data <- data.frame(day_whole=whole_day,day_lower=lower_day,day_sample=sample_day,simulation=as.character(i))
+  record_data <- rbind(record_data,input_data)
+}
 
 ##plot the new infected in whole population
 plot1<-ggplot(data = plot_data, aes(x = days, y = I_whole, color = simulation))+geom_line()+ ggtitle("New Infected in Whole Population")
-plot1<-plot1+labs(y="N", x = "day")
-plot1<-plot1+ theme_classic()
+plot1<-plot1+labs(y="N", x = "day")+ theme_classic()
 plot1<-plot1+geom_hline(yintercept=max(plot_data$I_whole),color='blue',linetype=2)
 ##plot1<-plot1+geom_vline(xintercept=day_whole,color='blue',linetype=2)
 
 ##plot the new infected in 10% population
 plot2<-ggplot(data = plot_data, aes(x = days, y = I_lower, color = simulation))+geom_line()+ ggtitle("New Infected in 10% Population")
-plot2<-plot2+labs(y="N", x = "day")
-plot2<-plot2+ theme_classic()
+plot2<-plot2+labs(y="N", x = "day")+ theme_classic()
 plot2<-plot2+geom_hline(yintercept=max(plot_data$I_lower),color='blue',linetype=2)
 ##plot2<-plot2+geom_vline(xintercept=day_lower,color='blue',linetype=2)
 
 ##plot the new infected in 0.1% population
 plot3<-ggplot(data = plot_data, aes(x = days, y = I_sample, color = simulation))+geom_line()+ ggtitle("New Infected in 0.1% Population")
-plot3<-plot3+labs(y="N", x = "day")
-plot3<-plot3+ theme_classic()
+plot3<-plot3+labs(y="N", x = "day")+theme_classic()
 plot3<-plot3+geom_hline(yintercept=max(plot_data$I_sample),color='blue',linetype=2)
 ##plot3<-plot3+geom_vline(xintercept=day_sample,color='blue',linetype=2)
 
 
 ##plot simulation vs maximum new infection during each simulation
 plot4<-ggplot(data = max_whole, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
-plot4<-plot4+theme_classic()
+plot4<-plot4+theme_classic()+labs(y="N", x = "simulation")
 plot5<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
-plot5<-plot5+theme_classic()
+plot5<-plot5+theme_classic()+labs(y="N", x = "simulation")
 plot6<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
-plot6<-plot6+theme_classic()
+plot6<-plot6+theme_classic()+labs(y="N", x = "simulation")
+
+##plot simulation vs maximum new infection during each simulation
+plot7<-ggplot(data = record_data, aes(x = simulation, y = day_whole))+geom_bar(position="dodge",stat="identity", fill="steelblue")
+plot7<-plot7+theme_classic()+labs(y="day", x = "simulation")
+plot8<-ggplot(data = record_data, aes(x = simulation, y = day_lower))+geom_bar(stat="identity", fill="steelblue")
+plot8<-plot8+theme_classic()+labs(y="day", x = "simulation")
+plot9<-ggplot(data = record_data, aes(x = simulation, y = day_sample))+geom_bar(stat="identity", fill="steelblue")
+plot9<-plot9+theme_classic()+labs(y="day", x = "simulation")
 ## Create the subplot
 ##grid.arrange(plot1,plot2,plot3,nrow=1)
 ####From the peak and trend of infected rate of whole population and 10% population with the smallest contact rate,
