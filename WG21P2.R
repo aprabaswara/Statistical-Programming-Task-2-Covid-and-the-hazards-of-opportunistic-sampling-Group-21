@@ -1043,8 +1043,9 @@ for (i in 1:10){
 ##S=0; E=1; I=2; R=3
 ##******************************************************************************
 
-
-#covid_simulation<- function(pop_size,sim_days,beta_value){
+library(ggplot2)
+library(gridExtra)
+#Create function to calculate number of new infected in each population
 covid_simulation<- function(pop_size,sim_days,beta_value){
   ##function to plot the new infection each days for the three observed 
   ##population.
@@ -1056,19 +1057,19 @@ covid_simulation<- function(pop_size,sim_days,beta_value){
   first_exposed=10 ##initial number of exposed people
   gamma=1/3 ##daily probability E -> I
   delta=1/5 ##daily probability I -> R
-  lamda=0.4/n ##overall infectivity parameters
-  x<-rep(0,n)## initialize to susceptible state
+  lamda=0.4/pop_size ##overall infectivity parameters
+  x<-rep(0,pop_size)## initialize to susceptible state
   
   
   ##Search 10% people with lowest beta value
   #1beta_sort<-sort(beta_value,decreasing = TRUE)##sort value from big to small
   #1beta_lower <- tail(beta_sort,n*0.1)##take 10% people with lowest beta value
   #1lower_index<-which(beta_value %in% beta_lower)
-  lower_index<-order(beta, decreasing = FALSE)[1:550000]
+  lower_index<-order(beta_value, decreasing = FALSE)[1:550000]
   
   
   ##Random sample 0.1% people from the whole population
-  sample_beta<-sample(beta_value,n*0.001)##take 0.1% random sample from the beta
+  sample_beta<-sample(beta_value,pop_size*0.001)##take 0.1% random sample from the beta
   sample_index<-which(beta_value %in% sample_beta)
   #sample_index<-sample(c(1:n),n*0.001)
   
@@ -1107,7 +1108,7 @@ covid_simulation<- function(pop_size,sim_days,beta_value){
     x[x==1&u<gamma]<-2 ## E -> I with probability gamma
     
     
-    x[x==0&u<beta*lamda*sum_beta_I]<-1
+    x[x==0&u<beta_value*lamda*sum_beta_I]<-1
     #x[which(x==0)][u[which(x==0)]<sum_beta_I*lamda*beta_value[which(x==0)]]<-1
     ## S -> E with probability beta[j]*lambda*sum(beta[i] for all i in I)
     y <- x[lower_index]
@@ -1146,36 +1147,56 @@ covid_simulation<- function(pop_size,sim_days,beta_value){
   
   
   #list (S=S,E=E,I=I,R=R,beta=beta);list (A=A,W=W,U=U,P=P,beta=beta);list (D=D,Q=Q,G=G,K=K,beta=beta)
-  list (I=I,U=U,G=G,beta=beta)
+  list (I=I,U=U,G=G,beta=beta_value)
   
   ##standarize and plot each new infected
-  plot(I/n,ylim=c(0,max(I/n,U/(0.1*n),G/(0.001*n))),xlab="day",ylab="N",col='red',type='l')
-  lines(U/(0.1*n),ylim=c(0,max(U/(0.1*n))),xlab="day",ylab="N",col='green',type='l')
-  lines(G/(0.001*n),ylim=c(0,max(G/(0.001*n))),xlab="day",ylab="N",col='blue',type='l')
+  #plot(I/n,ylim=c(0,max(I/n,U/(0.1*n),G/(0.001*n))),xlab="day",ylab="N",col='red',type='l')
+  #lines(U/(0.1*n),ylim=c(0,max(U/(0.1*n))),xlab="day",ylab="N",col='green',type='l')
+  #lines(G/(0.001*n),ylim=c(0,max(G/(0.001*n))),xlab="day",ylab="N",col='blue',type='l')
   
   ###plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
   ###points(U,ylim=c(0,max(U)),xlab="day",ylab="N",col='green',type='l')
   ###lines(G,ylim=c(0,max(G)),xlab="day",ylab="N",col='blue',type='l')
   
   ##Add legend and threshold line at the peak
-  df<-data.frame(I=I/n,I_lower=U/(0.1*n),I_sample=G/(0.001*n),days=1:nt)
-  abline(v = df$days[df$I==max(df$I)], col = "red", lty = 3)
-  abline(v = df$days[df$I_lower==max(df$I_lower)], col = "green", lty = 3)
-  abline(v = df$days[df$I_sample==max(df$I_sample)], col = "blue", lty = 3)
-  legend(1, 0.015, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
+  #df<-data.frame(I=I/n,I_lower=U/(0.1*n),I_sample=G/(0.001*n),days=1:nt)
+  #abline(v = which(I/pop_size==max(I/pop_size)), col = "red", lty = 3)
+  #abline(v = which(U/(0.1*pop_size)==max(U/(0.1*pop_size))), col = "green", lty = 3)
+  #abline(v = which(G/(0.001*pop_size)==max(G/(0.001*pop_size))), col = "blue", lty = 3)
+  #legend(1, 0.015, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
   
   ##Display horizontal line
-  abline(h = max(df$I), col = "red", lty = 3)
-  abline(h = max(df$I_lower), col = "green", lty = 3)
-  abline(h = max(df$I_sample), col = "blue", lty = 3)
+  #abline(h = max(I/pop_size), col = "red", lty = 3)
+  #abline(h = max(U/(0.1*pop_size)), col = "green", lty = 3)
+  #abline(h = max(G/(0.001*pop_size)), col = "blue", lty = 3)
 }
 
 ##initialize data
 n<-5500000 ##Scotland population
 nt<-150 ##number of observed days
 beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta) ##beta value
-covid_simulation(n,nt,beta)##initialize simulation
+epi<-covid_simulation(n,nt,beta)##initialize simulation
+pop_infect<-data.frame(I_whole=epi$I,I_lower=epi$U,I_sample=epi$G,days=1:nt)
 
+##standarize and plot each new infected
+great_max<-max(max(pop_infect$I_whole/n),max(pop_infect$I_lower/(0.1*n)),max(pop_infect$I_sample/(0.001*n)))
+plot(pop_infect$I_whole/n,ylim=c(0,great_max),xlab="day",ylab="N",col='red',type='l')
+lines(pop_infect$I_lower/(0.1*n),ylim=c(0,max(pop_infect$I_lower/(0.1*n))),xlab="day",ylab="N",col='green',type='l')
+lines(pop_infect$I_sample/(0.001*n),ylim=c(0,max(pop_infect$I_sample/(0.001*n))),xlab="day",ylab="N",col='blue',type='l')
+
+##Display horizontal line
+abline(h = max(pop_infect$I_whole/n), col = "red", lty = 3)
+abline(h = max(pop_infect$I_lower/(0.1*n)), col = "green", lty = 3)
+abline(h = max(pop_infect$I_sample/(0.001*n)), col = "blue", lty = 3)
+
+##Display vertical line
+abline(v = pop_infect$days[pop_infect$I_whole==max(pop_infect$I_whole)], col = "red", lty = 3)
+abline(v = pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)], col = "green", lty = 3)
+abline(v = pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)], col = "blue", lty = 3)
+
+##Add legend and title to plot
+legend(1, 0.013, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
+mtext(text="New Infection Each Day",side=3)
 ##Running 10 replicate simulations
 
 par(mfcol=c(10,3),mar=c(4,4,1,1))
@@ -1186,13 +1207,71 @@ par(mfcol=c(10,3),mar=c(4,4,1,1))
 ##nc = number of column. 
 ## *************************************************************************
 
+plot_data <- data.frame(I_whole=numeric(),I_lower=numeric(),I_sample=numeric(),simulation=character(),days=numeric())
 for (i in 1:10){
   ##function to running 10 replicate simulations
   beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
-  covid_simulation(n,nt,beta) ##initialize simulation
+  epi<-covid_simulation(n,nt,beta)##initialize simulation
+  new_data <- data.frame(I_whole=epi$I,I_lower=epi$U,I_sample=epi$G,simulation=rep(as.character(i),nt),days=1:nt)
+  plot_data <- rbind(plot_data,new_data)
 }
-system.time(model<-covid_simulation(n,nt,beta))
 
+##Standarized all new infected data
+plot_data$I_whole<-plot_data$I_whole/n
+plot_data$I_lower<-plot_data$I_lower/(0.1*n)
+plot_data$I_sample<-plot_data$I_sample/(0.001*n)
+
+##Find the highest new infection per simulation in each population
+max_whole <- aggregate(plot_data$I_whole, by = list(plot_data$simulation), max)
+colnames(max_whole) <- c("Simulation", "Infected_Maximum")
+
+max_lower <- aggregate(plot_data$I_lower, by = list(plot_data$simulation), max)
+colnames(max_lower) <- c("Simulation", "Infected_Maximum")
+
+max_sample <- aggregate(plot_data$I_sample, by = list(plot_data$simulation), max)
+colnames(max_sample) <- c("Simulation", "Infected_Maximum")
+
+##Find which day that have the highest new infection per simulation in each population
+day_whole <- aggregate(plot_data$I_whole, by = list(plot_data$simulation), max)
+colnames(day_whole) <- c("Simulation", "Day")
+
+max_lower <- aggregate(plot_data$I_lower, by = list(plot_data$simulation), max)
+colnames(max_lower) <- c("Simulation", "Infected_Maximum")
+
+max_sample <- aggregate(plot_data$I_sample, by = list(plot_data$simulation), max)
+colnames(max_sample) <- c("Simulation", "Infected_Maximum")
+
+##plot the new infected in whole population
+plot1<-ggplot(data = plot_data, aes(x = days, y = I_whole, color = simulation))+geom_line()+ ggtitle("New Infected in Whole Population")
+plot1<-plot1+labs(y="N", x = "day")
+plot1<-plot1+ theme_classic()
+plot1<-plot1+geom_hline(yintercept=max(plot_data$I_whole),color='blue',linetype=2)
+##plot1<-plot1+geom_vline(xintercept=day_whole,color='blue',linetype=2)
+
+##plot the new infected in 10% population
+plot2<-ggplot(data = plot_data, aes(x = days, y = I_lower, color = simulation))+geom_line()+ ggtitle("New Infected in 10% Population")
+plot2<-plot2+labs(y="N", x = "day")
+plot2<-plot2+ theme_classic()
+plot2<-plot2+geom_hline(yintercept=max(plot_data$I_lower),color='blue',linetype=2)
+##plot2<-plot2+geom_vline(xintercept=day_lower,color='blue',linetype=2)
+
+##plot the new infected in 0.1% population
+plot3<-ggplot(data = plot_data, aes(x = days, y = I_sample, color = simulation))+geom_line()+ ggtitle("New Infected in 0.1% Population")
+plot3<-plot3+labs(y="N", x = "day")
+plot3<-plot3+ theme_classic()
+plot3<-plot3+geom_hline(yintercept=max(plot_data$I_sample),color='blue',linetype=2)
+##plot3<-plot3+geom_vline(xintercept=day_sample,color='blue',linetype=2)
+
+
+##plot simulation vs maximum new infection during each simulation
+plot4<-ggplot(data = max_whole, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
+plot4<-plot4+theme_classic()
+plot5<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
+plot5<-plot5+theme_classic()
+plot6<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
+plot6<-plot6+theme_classic()
+## Create the subplot
+##grid.arrange(plot1,plot2,plot3,nrow=1)
 ####From the peak and trend of infected rate of whole population and 10% population with the smallest contact rate,
 #####we can find that the simulation for 10% people will underestimate the infection rate.Based on this conclusion,
 ####the incidence reconstructed from the ZOE data could underestimate the infected population since its study object
