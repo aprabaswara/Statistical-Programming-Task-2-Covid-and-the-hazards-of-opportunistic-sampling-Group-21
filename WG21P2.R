@@ -961,3 +961,239 @@ for (i in 1:10){
   beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
   covid_simulation(n,nt,beta) ##initialize simulation
 }
+
+
+
+
+
+#Maybe the final version
+
+##Overview:
+## ********
+##The aim of this project is to answer the following question:
+##What do the daily infection trajectories look like for the 10% (say) of the 
+##population with the lowest individual transmission probabilities, and how do 
+##they compare to the infection trajectories for the whole population?
+
+##******************************************************************************
+
+##Model Assumption:
+##*****************
+##1. The ith person in the whole population has a relative contact rate with
+##   other people of beta[i], so that the daily chance of a transmission
+##   between infected person i and uninfected person j is beta[i]*beta[j]*lambda,
+##   where lambda is an overall viral infectivity parameter. 
+##
+##2. The average value of beta over the whole population is 1. 
+##
+##3. Each day an uninfected person, j, has a probability 
+##   lambda*beta[j]*sigma(beta[i] for all i in I) of being infected, 
+##   and entering the exposed (E) state. I is the set of all currently infected 
+##   people. Once exposed, they have a daily probability of 1/3 of entering the 
+##   infectious state. 
+##
+##4. The infectious have a daily probability of 1/5 of leaving the infectious 
+##   state (recovery or transition to serious disease). 
+##
+##5. Over the course of the simulation we do not want to consider re-infection.
+##******************************************************************************
+##
+##Simulation description:
+##***********************
+##In this code, we simulate the model for 150 days and also we will record the 
+##number of new infections each day, and the number of new infections among the 
+##10% of the population with the lowest beta[i] values. Also,we will record the 
+##number of new infection in a random sample of 0.1% of the population. All of
+##the result will be presented in a line graph.
+##******************************************************************************
+##
+##Algorithm:
+##1. Set the number of Scotland population size (n), which is 5.5 million.
+##
+##2. Generate beta using random generation function for log normal distribution. 
+##   In R studio, this function is called rlnorm. For this simulation we set the 
+##   mean = 0 and standard deviation = 0.5.
+##
+##3. Standarized the value of all beta by dividing it with its mean.
+##
+##4. Calculate the overall infectivity parameter (lambda) using this formula:
+##   lambda=0.4/n.
+##
+##5. Set 10 people randomly into the exposed state (E).
+##
+##6. Find 550 thousand people who have lowest beta value.
+##
+##7. Select 5.5 thousand people randomly.
+##
+##8. Calculate the new infections each day for the whole population, 10% of the 
+##   population that has lowest beta value, and 0.1% of the people selected 
+##   randomly. We can stop counting the new infections if we reach 150 days
+##   because we only observed it for 150 days.
+##
+##9. Plot the result from step 8 in one plot that contain all graph.
+##
+##10.Run all simulations from step 1 until step 9 for 10 times and plot them in
+##   a subplot that contains 10 graph.
+##******************************************************************************
+##
+##States:
+##**************
+##S=suspectible; E=exposed (infected); I=infectious ; R=recovered
+##Over the simulation we use this number to classify each states
+##S=0; E=1; I=2; R=3
+##******************************************************************************
+
+
+#covid_simulation<- function(pop_size,sim_days,beta_value){
+covid_simulation<- function(pop_size,sim_days,beta_value){
+  ##function to plot the new infection each days for the three observed 
+  ##population.
+  ##pop_size = population size; sim_days = observed days during simulation;
+  ##beta_value = the contact rate for this simulation (beta).
+  
+  
+  ##initialize simulation data
+  first_exposed=10 ##initial number of exposed people
+  gamma=1/3 ##daily probability E -> I
+  delta=1/5 ##daily probability I -> R
+  lamda=0.4/n ##overall infectivity parameters
+  x<-rep(0,n)## initialize to susceptible state
+  
+  
+  ##Search 10% people with lowest beta value
+  #1beta_sort<-sort(beta_value,decreasing = TRUE)##sort value from big to small
+  #1beta_lower <- tail(beta_sort,n*0.1)##take 10% people with lowest beta value
+  #1lower_index<-which(beta_value %in% beta_lower)
+  lower_index<-order(beta, decreasing = FALSE)[1:550000]
+  
+  
+  ##Random sample 0.1% people from the whole population
+  sample_beta<-sample(beta_value,n*0.001)##take 0.1% random sample from the beta
+  sample_index<-which(beta_value %in% sample_beta)
+  #sample_index<-sample(c(1:n),n*0.001)
+  
+  ##Notation: 
+  ##x = whole population; y = 10% of population; z = 0.1% of population
+  
+  x[1:first_exposed]<-1 #set 10 people to exposed state
+  y <- x[lower_index]
+  z <- x[sample_index]
+  
+  #S<-E<-I<-R<-rep(0,nt);A<-W<-U<-P<-rep(0,nt); D<-Q<-G<-K<-rep(0,nt)
+  I<-U<-G<-rep(0,sim_days)## set up storage for pop in each new infected each day
+  
+  ## Details: 
+  ##I=new infected each day in whole population;
+  ##U=new infected each day in 10% of population with lowest beta value;
+  ##G=new infected each day in 0.1% of population;
+  
+  # S[1]<-n-ne;E[1]<-ne;A[1]<-n-ne;W[1]<-ne;D[1]<-n-ne;Q[1]<-ne
+  
+  
+  ##simulation for 150 days
+  for (i in 2:sim_days){
+    
+    u<-runif(pop_size)##generate random deviates based on the population size
+    
+    ##total people in S state from each three population
+    sum_x<-sum(x==0)
+    sum_y<-sum(y==0)
+    sum_z<-sum(z==0)
+    
+    sum_beta_I<-sum(beta_value[which(x==2)])##calculate the sum of beta in I state
+    
+    x[x==2&u<delta]<-3 ## I -> R with probability delta
+    
+    x[x==1&u<gamma]<-2 ## E -> I with probability gamma
+    
+    
+    x[x==0&u<beta*lamda*sum_beta_I]<-1
+    #x[which(x==0)][u[which(x==0)]<sum_beta_I*lamda*beta_value[which(x==0)]]<-1
+    ## S -> E with probability beta[j]*lambda*sum(beta[i] for all i in I)
+    y <- x[lower_index]
+    z <- x[sample_index]
+    
+    
+    newly_infected_x<-sum_x-sum(x==0)## new infected each day for whole population
+    I[i]<-newly_infected_x
+    
+    newly_infected_y<-sum_y-sum(y==0)## new infected each day for 10% population
+    U[i]<-newly_infected_y
+    
+    newly_infected_z<-sum_z-sum(z==0)## new infected each day for 0.1% population
+    G[i]<-newly_infected_z
+    
+    
+    
+    #x[which(x==0)][u[which(x==0)]<sum(beta[which(x==2)])*lamda*beta[which(x==0)]]<-1
+    
+    #S[i]<-sum(x==0);E[i]<-sum(x==1);
+    #I[i]<-sum(x==2)-sum_x
+    #;R[i]<-sum(x==3)
+    
+    #A[i]<-sum(y==0);W[i]<-sum(y==1);
+    #U[i]<-sum(y==2)-sum_y
+    #;P[i]<-sum(y==3)
+    
+    #D[i]<-sum(z==0);Q[i]<-sum(z==1);
+    # G[i]<-sum(z==2)-sum_z
+    #;K[i]<-sum(z==3)
+    
+    
+    
+    
+  }
+  
+  
+  #list (S=S,E=E,I=I,R=R,beta=beta);list (A=A,W=W,U=U,P=P,beta=beta);list (D=D,Q=Q,G=G,K=K,beta=beta)
+  list (I=I,U=U,G=G,beta=beta)
+  
+  ##standarize and plot each new infected
+  plot(I/n,ylim=c(0,max(I/n,U/(0.1*n),G/(0.001*n))),xlab="day",ylab="N",col='red',type='l')
+  lines(U/(0.1*n),ylim=c(0,max(U/(0.1*n))),xlab="day",ylab="N",col='green',type='l')
+  lines(G/(0.001*n),ylim=c(0,max(G/(0.001*n))),xlab="day",ylab="N",col='blue',type='l')
+  
+  ###plot(I,ylim=c(0,max(I)),xlab="day",ylab="N",col='red',type='l')
+  ###points(U,ylim=c(0,max(U)),xlab="day",ylab="N",col='green',type='l')
+  ###lines(G,ylim=c(0,max(G)),xlab="day",ylab="N",col='blue',type='l')
+  
+  ##Add legend and threshold line at the peak
+  df<-data.frame(I=I/n,I_lower=U/(0.1*n),I_sample=G/(0.001*n),days=1:nt)
+  abline(v = df$days[df$I==max(df$I)], col = "red", lty = 3)
+  abline(v = df$days[df$I_lower==max(df$I_lower)], col = "green", lty = 3)
+  abline(v = df$days[df$I_sample==max(df$I_sample)], col = "blue", lty = 3)
+  legend(1, 0.015, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
+  
+  ##Display horizontal line
+  abline(h = max(df$I), col = "red", lty = 3)
+  abline(h = max(df$I_lower), col = "green", lty = 3)
+  abline(h = max(df$I_sample), col = "blue", lty = 3)
+}
+
+##initialize data
+n<-5500000 ##Scotland population
+nt<-150 ##number of observed days
+beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta) ##beta value
+covid_simulation(n,nt,beta)##initialize simulation
+
+##Running 10 replicate simulations
+
+par(mfcol=c(10,3),mar=c(4,4,1,1))
+##R build in function to set graphical parameters
+##mar = a numerical vector of the form c(bottom, left, top, right) to modify the 
+##graph margin where its element indicates the margin size;
+##mfcol = a vector in the form c(nr,nc) where nr = number of row and 
+##nc = number of column. 
+## *************************************************************************
+
+for (i in 1:10){
+  ##function to running 10 replicate simulations
+  beta<- rlnorm(n,0,0.5); beta <- beta/mean(beta)
+  covid_simulation(n,nt,beta) ##initialize simulation
+}
+system.time(model<-covid_simulation(n,nt,beta))
+
+####From the peak and trend of infected rate of whole population and 10% population with the smallest contact rate,
+#####we can find that the simulation for 10% people will underestimate the infection rate.Based on this conclusion,
+####the incidence reconstructed from the ZOE data could underestimate the infected population since its study object
+####value covid more and they might take more protective measures than more general people.
