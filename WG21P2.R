@@ -1044,7 +1044,18 @@ for (i in 1:10){
 ##******************************************************************************
 
 library(ggplot2)
+library(gtable)
 library(gridExtra)
+library(grid) 
+#Create function to get ggplot legend
+search_legend <- function(graph_plot) {
+  ##function to search ggplot legend
+  ##graph_plot=variable that store data visualization from ggplot
+  grob_builder <- ggplot_gtable(ggplot_build(graph_plot))
+  gb_search <- which(sapply(grob_builder$grobs, function(x) x$name) == "guide-box")
+  return(grob_builder$grobs[gb_search])
+}
+
 #Create function to calculate number of new infected in each population
 covid_simulation<- function(pop_size,sim_days,beta_value){
   ##function to plot the new infection each days for the three observed 
@@ -1196,19 +1207,19 @@ abline(v = pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)], col = "
 abline(v = pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)], col = "blue", lty = 3)
 
 ##Add axis
-axis(1,at=pop_infect$days[pop_infect$I_whole==max(pop_infect$I_whole)],labels = pop_infect$days[pop_infect$I_whole==max(pop_infect$I_whole)], col = "red",lty=3)
-axis(2,at=max(pop_infect$I_whole/n),labels = max(pop_infect$I_whole/n), las=1, cex.axis=0.8)
-axis(1,at=pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)],labels = pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)], col = "black",lty=3)
-axis(2,at=max(pop_infect$I_lower/(0.1*n)),labels = max(pop_infect$I_lower/(0.1*n)), las=1, cex.axis=0.8)
-axis(1,at=pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)],labels = pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)], col = "blue", lty = 3)
-axis(2,at=max(pop_infect$I_sample/(0.001*n)),labels = max(pop_infect$I_sample/(0.001*n)), las=1, cex.axis=0.8)
+#axis(1,at=pop_infect$days[pop_infect$I_whole==max(pop_infect$I_whole)],labels = pop_infect$days[pop_infect$I_whole==max(pop_infect$I_whole)], col = "red",lty=3)
+#axis(2,at=max(pop_infect$I_whole/n),labels = max(pop_infect$I_whole/n), las=1, cex.axis=0.8)
+#axis(1,at=pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)],labels = pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)], col = "black",lty=3)
+#axis(2,at=max(pop_infect$I_lower/(0.1*n)),labels = max(pop_infect$I_lower/(0.1*n)), las=1, cex.axis=0.8)
+#axis(1,at=pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)],labels = pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)], col = "blue", lty = 3)
+#axis(2,at=max(pop_infect$I_sample/(0.001*n)),labels = max(pop_infect$I_sample/(0.001*n)), las=1, cex.axis=0.8)
 
 ##Add legend and title to plot
 legend(1, 0.013, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
 mtext(text="New Infection Each Day",side=3)
 ##Running 10 replicate simulations
 
-par(mfcol=c(10,3),mar=c(4,4,1,1))
+#par(mfcol=c(10,3),mar=c(4,4,1,1))
 ##R build in function to set graphical parameters
 ##mar = a numerical vector of the form c(bottom, left, top, right) to modify the 
 ##graph margin where its element indicates the margin size;
@@ -1251,23 +1262,19 @@ for (i in 1:10){
 }
 
 ##plot the new infected in whole population
-plot1<-ggplot(data = plot_data, aes(x = days, y = I_whole, color = simulation))+geom_line()+ ggtitle("New Infected in Whole Population")
-plot1<-plot1+labs(y="N", x = "day")+ theme_classic()
-plot1<-plot1+geom_hline(yintercept=max(plot_data$I_whole),color='blue',linetype=2)
-##plot1<-plot1+geom_vline(xintercept=day_whole,color='blue',linetype=2)
+plot1<-ggplot(data = plot_data, aes(x = days, y = I_whole, color = simulation))+geom_line()+ ggtitle("Whole Population")
+plot1<-plot1+labs(y="N", x = "day")+ theme_classic()+theme(legend.position = 'none')
 
 ##plot the new infected in 10% population
-plot2<-ggplot(data = plot_data, aes(x = days, y = I_lower, color = simulation))+geom_line()+ ggtitle("New Infected in 10% Population")
-plot2<-plot2+labs(y="N", x = "day")+ theme_classic()
-plot2<-plot2+geom_hline(yintercept=max(plot_data$I_lower),color='blue',linetype=2)
-##plot2<-plot2+geom_vline(xintercept=day_lower,color='blue',linetype=2)
+plot2<-ggplot(data = plot_data, aes(x = days, y = I_lower, color = simulation))+geom_line()+ ggtitle("Cautious Population")
+plot2<-plot2+labs(y="N", x = "day")+ theme_classic()+theme(legend.position = "none")
 
 ##plot the new infected in 0.1% population
-plot3<-ggplot(data = plot_data, aes(x = days, y = I_sample, color = simulation))+geom_line()+ ggtitle("New Infected in 0.1% Population")
-plot3<-plot3+labs(y="N", x = "day")+theme_classic()
-plot3<-plot3+geom_hline(yintercept=max(plot_data$I_sample),color='blue',linetype=2)
-##plot3<-plot3+geom_vline(xintercept=day_sample,color='blue',linetype=2)
+plot3 <- ggplot(data = plot_data, aes(x = days, y = I_sample, color = simulation))+geom_line()+ ggtitle("0.1% Population")
+plot3 <- plot3+labs(y="N", x = "day")+theme_classic()+theme(legend.position = "right")
 
+##Draw first subplot
+grid.arrange(plot1, plot2,plot3, ncol=2, nrow = 2)
 
 ##plot simulation vs maximum new infection during each simulation
 plot4<-ggplot(data = max_whole, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
@@ -1284,7 +1291,8 @@ plot8<-ggplot(data = record_data, aes(x = simulation, y = day_lower))+geom_bar(s
 plot8<-plot8+theme_classic()+labs(y="day", x = "simulation")
 plot9<-ggplot(data = record_data, aes(x = simulation, y = day_sample))+geom_bar(stat="identity", fill="steelblue")
 plot9<-plot9+theme_classic()+labs(y="day", x = "simulation")
-## Create the subplot
+## Create the new subplot
+grid.arrange(plot4, plot5,plot6, plot7, plot8, plot9, ncol=2, nrow = 3)
 ##grid.arrange(plot1,plot2,plot3,nrow=1)
 ####From the peak and trend of infected rate of whole population and 10% population with the smallest contact rate,
 #####we can find that the simulation for 10% people will underestimate the infection rate.Based on this conclusion,
