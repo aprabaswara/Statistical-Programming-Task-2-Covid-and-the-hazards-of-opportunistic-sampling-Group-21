@@ -1195,6 +1195,14 @@ abline(v = pop_infect$days[pop_infect$I_whole==max(pop_infect$I_whole)], col = "
 abline(v = pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)], col = "green", lty = 3)
 abline(v = pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)], col = "blue", lty = 3)
 
+##Add axis
+axis(1,at=pop_infect$days[pop_infect$I_whole==max(pop_infect$I_whole)],labels = pop_infect$days[pop_infect$I_whole==max(pop_infect$I_whole)], col = "red",lty=3)
+axis(2,at=max(pop_infect$I_whole/n),labels = max(pop_infect$I_whole/n), las=1, cex.axis=0.8)
+axis(1,at=pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)],labels = pop_infect$days[pop_infect$I_lower==max(pop_infect$I_lower)], col = "black",lty=3)
+axis(2,at=max(pop_infect$I_lower/(0.1*n)),labels = max(pop_infect$I_lower/(0.1*n)), las=1, cex.axis=0.8)
+axis(1,at=pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)],labels = pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)], col = "blue", lty = 3)
+axis(2,at=max(pop_infect$I_sample/(0.001*n)),labels = max(pop_infect$I_sample/(0.001*n)), las=1, cex.axis=0.8)
+
 ##Add legend and title to plot
 legend(1, 0.013, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
 mtext(text="New Infection Each Day",side=3)
