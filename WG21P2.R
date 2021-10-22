@@ -1044,7 +1044,6 @@ for (i in 1:10){
 ##******************************************************************************
 
 library(ggplot2)
-library(gtable)
 library(gridExtra)
 library(grid) 
 
@@ -1229,18 +1228,19 @@ for (i in 1:10){
 }
 
 ##Standarized all new infected data
+plot_data_original <- plot_data
 plot_data$I_whole<-plot_data$I_whole/n
 plot_data$I_lower<-plot_data$I_lower/(0.1*n)
 plot_data$I_sample<-plot_data$I_sample/(0.001*n)
 
 ##Find the highest new infection per simulation in each population
-max_whole <- aggregate(plot_data$I_whole, by = list(plot_data$simulation), max)
+max_whole <- aggregate(plot_data_original$I_whole, by = list(plot_data_original$simulation), max)
 colnames(max_whole) <- c("Simulation", "Infected_Maximum")
 
-max_lower <- aggregate(plot_data$I_lower, by = list(plot_data$simulation), max)
+max_lower <- aggregate(plot_data_original$I_lower, by = list(plot_data_original$simulation), max)
 colnames(max_lower) <- c("Simulation", "Infected_Maximum")
 
-max_sample <- aggregate(plot_data$I_sample, by = list(plot_data$simulation), max)
+max_sample <- aggregate(plot_data_original$I_sample, by = list(plot_data_original$simulation), max)
 colnames(max_sample) <- c("Simulation", "Infected_Maximum")
 
 ##Find which day that have the highest new infection per simulation in each population
@@ -1252,6 +1252,7 @@ for (i in 1:10){
   input_data <- data.frame(day_whole=whole_day,day_lower=lower_day,day_sample=sample_day,simulation=as.character(i))
   record_data <- rbind(record_data,input_data)
 }
+
 
 ##plot the new infected in whole population
 plot1<-ggplot(data = plot_data, aes(x = days, y = I_whole, color = simulation))+geom_line()+ ggtitle("Whole Population")
@@ -1265,27 +1266,29 @@ plot2<-plot2+labs(y="N", x = "day")+ theme_classic()+theme(legend.position = "no
 plot3 <- ggplot(data = plot_data, aes(x = days, y = I_sample, color = simulation))+geom_line()+ ggtitle("0.1% Population")
 plot3 <- plot3+labs(y="N", x = "day")+theme_classic()+theme(legend.position = "right")
 
-##Draw first subplot
-grid.arrange(plot1, plot2,plot3, ncol=2, nrow = 2)
 
 ##plot simulation vs maximum new infection during each simulation
 plot4<-ggplot(data = max_whole, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
-plot4<-plot4+theme_classic()+labs(y="N", x = "simulation")
+plot4<-plot4+theme_classic()+labs(y="N", x = "simulation")+geom_text(aes(label = Infected_Maximum), vjust = 1.5, colour = "white")
 plot5<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
-plot5<-plot5+theme_classic()+labs(y="N", x = "simulation")
+plot5<-plot5+theme_classic()+labs(y="N", x = "simulation")+geom_text(aes(label = Infected_Maximum), vjust = 1.5, colour = "white")
 plot6<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
-plot6<-plot6+theme_classic()+labs(y="N", x = "simulation")
+plot6<-plot6+theme_classic()+labs(y="N", x = "simulation")+geom_text(aes(label = Infected_Maximum), vjust = 1.5, colour = "white")
 
 ##plot simulation vs maximum new infection during each simulation
 plot7<-ggplot(data = record_data, aes(x = simulation, y = day_whole))+geom_bar(position="dodge",stat="identity", fill="steelblue")
-plot7<-plot7+theme_classic()+labs(y="day", x = "simulation")
+plot7<-plot7+theme_classic()+labs(y="day", x = "simulation")+geom_text(aes(label = day_whole), vjust = 1.5, colour = "white")
 plot8<-ggplot(data = record_data, aes(x = simulation, y = day_lower))+geom_bar(stat="identity", fill="steelblue")
-plot8<-plot8+theme_classic()+labs(y="day", x = "simulation")
+plot8<-plot8+theme_classic()+labs(y="day", x = "simulation")+geom_text(aes(label = day_lower), vjust = 1.5, colour = "white")
 plot9<-ggplot(data = record_data, aes(x = simulation, y = day_sample))+geom_bar(stat="identity", fill="steelblue")
-plot9<-plot9+theme_classic()+labs(y="day", x = "simulation")
+plot9<-plot9+theme_classic()+labs(y="day", x = "simulation")+geom_text(aes(label = day_sample), vjust = 1.5, colour = "white")
+
 ## Create the new subplot
-grid.arrange(plot4, plot5,plot6, plot7, plot8, plot9, ncol=2, nrow = 3)
-##grid.arrange(plot1,plot2,plot3,nrow=1)
+grid.arrange(plot1, plot2,plot3, ncol=2, nrow = 2)
+grid.arrange(plot4, plot5,plot6, ncol=2, nrow = 2)
+grid.arrange(plot7, plot8, plot9, ncol=2, nrow = 2)
+
+
 ####From the peak and trend of infected rate of whole population and 10% population with the smallest contact rate,
 #####we can find that the simulation for 10% people will underestimate the infection rate.Based on this conclusion,
 ####the incidence reconstructed from the ZOE data could underestimate the infected population since its study object
