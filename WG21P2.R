@@ -1047,14 +1047,6 @@ library(ggplot2)
 library(gtable)
 library(gridExtra)
 library(grid) 
-#Create function to get ggplot legend
-search_legend <- function(graph_plot) {
-  ##function to search ggplot legend
-  ##graph_plot=variable that store data visualization from ggplot
-  grob_builder <- ggplot_gtable(ggplot_build(graph_plot))
-  gb_search <- which(sapply(grob_builder$grobs, function(x) x$name) == "guide-box")
-  return(grob_builder$grobs[gb_search])
-}
 
 #Create function to calculate number of new infected in each population
 covid_simulation<- function(pop_size,sim_days,beta_value){
