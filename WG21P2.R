@@ -97,10 +97,16 @@
 ##Over the simulation we use this number to classify each states
 ##S=0; E=1; I=2; R=3
 ##----------------------------------------------------------------------------------------
+##
+## In this task we use three library: ggplot2, gridExtra, and grid. We use this three 
+## library because they are suitable for plotting data based on more than 4 category 
+## and suitable for modifying grid and subplot. In addition, we use data frame because
+## it is easy to access and we can monitored each new infection. Whats more, data frame
+## can be used to access element that we want and make plotting a graph easier and fast.
 
-library(ggplot2)
-library(gridExtra)
-library(grid) 
+library(ggplot2)##library for data visualization
+library(gridExtra)##library for modifying grid and build subplot based on ggplot2
+library(grid) ##library for modifying grid
 
 #Create function to calculate number of new infected in the whole population, 10% of the 
 #population that has lowest beta value, and 0.1% of the people selected randomly.
@@ -243,11 +249,16 @@ axis(2,at=max(pop_infect$I_whole/n),labels = max(pop_infect$I_whole/n), las=1, c
 ##Add legend and title to plot
 legend(1, 0.02, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
 mtext(text="New Infection Each Day",side=3)
-##Running 10 replicate simulations
+
 
 
 ##----------------------------------------------------------------------------------------
+## In this part we will build the subplot for the new infection each day in all three population.
+## We plot them in one graph that contain 10 plot of new infection for each population because we
+## can monitored how the peak changed during each simulation. In addition, we build a subplot 
+## contain the peak of the new infection each days and the day where the peak appears.
 
+##Running 10 replicate simulations
 plot_data <- data.frame(I_whole=numeric(),I_lower=numeric(),I_sample=numeric(),simulation=character(),days=numeric())
 for (i in 1:10){
   ##function to running 10 replicate simulations
@@ -257,7 +268,7 @@ for (i in 1:10){
   plot_data <- rbind(plot_data,new_data)
 }
 
-##Standarized all new infected data
+##Standarized all new infected data and keep the original data
 plot_data_original <- plot_data
 plot_data$I_whole<-plot_data$I_whole/n
 plot_data$I_lower<-plot_data$I_lower/(0.1*n)
@@ -298,28 +309,30 @@ plot3 <- plot3+labs(y="N", x = "day")+theme_classic()+theme(legend.position = "r
 
 
 ##plot simulation vs maximum new infection during each simulation
-plot4<-ggplot(data = max_whole, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
+plot4<-ggplot(data = max_whole, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")+ ggtitle("Whole Population")
 plot4<-plot4+theme_classic()+labs(y="N", x = "simulation")+geom_text(aes(label = Infected_Maximum), vjust = 1.5, colour = "white")
-plot5<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
+plot5<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")+ ggtitle("Cautious Population")
 plot5<-plot5+theme_classic()+labs(y="N", x = "simulation")+geom_text(aes(label = Infected_Maximum), vjust = 1.5, colour = "white")
-plot6<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")
+plot6<-ggplot(data = max_lower, aes(x = Simulation, y = Infected_Maximum))+geom_bar(stat="identity", fill="steelblue")+ ggtitle("0.1% Population")
 plot6<-plot6+theme_classic()+labs(y="N", x = "simulation")+geom_text(aes(label = Infected_Maximum), vjust = 1.5, colour = "white")
 
 ##plot simulation vs maximum new infection during each simulation
-plot7<-ggplot(data = record_data, aes(x = simulation, y = day_whole))+geom_bar(stat="identity", fill="steelblue")
+plot7<-ggplot(data = record_data, aes(x = simulation, y = day_whole))+geom_bar(stat="identity", fill="steelblue")+ ggtitle("Whole Population")
 plot7<-plot7+theme_classic()+labs(y="day", x = "simulation")+geom_text(aes(label = day_whole), vjust = 1.5, colour = "white")
-plot8<-ggplot(data = record_data, aes(x = simulation, y = day_lower))+geom_bar(stat="identity", fill="steelblue")
+plot8<-ggplot(data = record_data, aes(x = simulation, y = day_lower))+geom_bar(stat="identity", fill="steelblue")+ ggtitle("Cautious Population")
 plot8<-plot8+theme_classic()+labs(y="day", x = "simulation")+geom_text(aes(label = day_lower), vjust = 1.5, colour = "white")
-plot9<-ggplot(data = record_data, aes(x = simulation, y = day_sample))+geom_bar(stat="identity", fill="steelblue")
+plot9<-ggplot(data = record_data, aes(x = simulation, y = day_sample))+geom_bar(stat="identity", fill="steelblue")+ ggtitle("0.1% Population")
 plot9<-plot9+theme_classic()+labs(y="day", x = "simulation")+geom_text(aes(label = day_sample), vjust = 1.5, colour = "white")
 
-## Create the new subplot
+## Create the subplot
 grid.arrange(plot1, plot2,plot3, ncol=2, nrow = 2)
 grid.arrange(plot4, plot5,plot6, ncol=2, nrow = 2)
 grid.arrange(plot7, plot8, plot9, ncol=2, nrow = 2)
 
 
+####Conclusion:
 ####From the peak and trend of infected rate of whole population and 10% population with the smallest contact rate,
-#####we can find that the simulation for 10% people will underestimate the infection rate.Based on this conclusion,
-####the incidence reconstructed from the ZOE data could underestimate the infected population since its study objects
-####value covid more and they might take more protective measures than more general people.
+#####we can find that the simulation for 10% people have the lower infection rate.Based on this conclusion,
+####the incidence reconstructed from the ZOE data could underestimate the infected rate of whole population. Its study objects
+####value COVID virus more and they might take more protective measures than more general people. Therefore the infected rate of ZOE
+####users would be lower than the whole population.
