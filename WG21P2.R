@@ -1215,7 +1215,7 @@ abline(v = pop_infect$days[pop_infect$I_sample==max(pop_infect$I_sample)], col =
 #axis(2,at=max(pop_infect$I_sample/(0.001*n)),labels = max(pop_infect$I_sample/(0.001*n)), las=1, cex.axis=0.8)
 
 ##Add legend and title to plot
-legend(1, 0.013, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
+legend(1, 0.02, legend=c("whole", "0.1%", "10%"),col=c("red", "blue","green"), lty=1, cex=0.5, text.font=3,text.col='black',box.lwd = 0,box.co='white')
 mtext(text="New Infection Each Day",side=3)
 ##Running 10 replicate simulations
 
